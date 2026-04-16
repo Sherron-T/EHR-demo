@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-fixed-dim: #87d0f2;
+  --color-on-tertiary-fixed: #002020;
+  --color-on-secondary: #ffffff;
+  --color-tertiary-fixed-dim: #84d4d3;
+  --color-on-primary-fixed-variant: #004d64;
+  --color-primary-fixed: #bee9ff;
+  --color-error: #ba1a1a;
+  --color-secondary: #4d616c;
+  --color-on-surface-variant: #3f484d;
+  --color-outline-variant: #bfc8cd;
+  --color-surface-bright: #f8f9fc;
+  --color-on-primary: #ffffff;
+  --color-secondary-fixed-dim: #b4cad6;
+  --color-surface: #f8f9fc;
+  --color-on-primary-container: #a2e1ff;
+  --color-outline: #70787e;
+  --color-primary-container: #006684;
+  --color-on-primary-fixed: #001f2a;
+  --color-tertiary-container: #006969;
+  --color-tertiary-fixed: #a0f0f0;
+  --color-on-surface: #191c1e;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-dim: #d8dadc;
+  --color-on-background: #191c1e;
+  --color-inverse-on-surface: #eff1f3;
+  --color-primary: #004d64;
+  --color-surface-container-highest: #e1e3e5;
+  --color-on-secondary-fixed-variant: #364954;
+  --color-on-secondary-container: #536772;
+  --color-inverse-surface: #2e3133;
+  --color-secondary-container: #d0e6f3;
+  --color-surface-tint: #016684;
+  --color-on-tertiary: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-on-error: #ffffff;
+  --color-secondary-fixed: #d0e6f3;
+  --color-background: #f8f9fc;
+  --color-on-secondary-fixed: #081e27;
+  --color-surface-variant: #e1e3e5;
+  --color-surface-container: #eceef0;
+  --color-on-tertiary-container: #95e5e5;
+  --color-on-tertiary-fixed-variant: #004f4f;
+  --color-on-error-container: #93000a;
+  --color-tertiary: #004f4f;
+  --color-error-container: #ffdad6;
+  --color-inverse-primary: #87d0f2;
+
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+@layer utilities {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+  }
+  .signature-gradient {
+    background: linear-gradient(135deg, #004d64 0%, #006684 100%);
+  }
+  .ambient-shadow {
+    box-shadow: 0 10px 40px rgba(25, 28, 30, 0.04);
+  }
+}

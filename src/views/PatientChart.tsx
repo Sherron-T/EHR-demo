@@ -86,6 +86,14 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
   });
   const [spSaved, setSpSaved] = useState(false);
 
+  // Document viewer modal
+  const [selectedDoc, setSelectedDoc] = useState<typeof documents[0] | null>(null);
+  const [showDocModal, setShowDocModal] = useState(false);
+
+  // Note detail modal
+  const [selectedNote, setSelectedNote] = useState<typeof notes[0] | null>(null);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+
   const tabs = ['Summary', 'Demographics', 'Outcomes', 'Timeline', 'Labs', 'Vitals', 'Orders', 'Documents'];
 
   const patient = patients.find(p => p.id === currentPatientId);
@@ -238,6 +246,186 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
     setSpSaved(true);
     addToast({ type: 'success', title: 'Safety Plan Saved', message: `Safety plan updated for ${patient.name}.` });
     setTimeout(() => setShowSafetyPlan(false), 1400);
+  };
+
+  const getDocumentContent = (doc: typeof documents[0]) => {
+    if (doc.type === 'Assessment') {
+      if (doc.title.includes('PHQ-9')) {
+        return `PHQ-9 PATIENT HEALTH QUESTIONNAIRE
+Date: ${doc.date} | Patient: ${patient?.name} | Completed via: Patient Portal
+
+Over the last 2 weeks, how often have you been bothered by:
+
+1. Little interest or pleasure in doing things .............. Nearly every day (3)
+2. Feeling down, depressed, or hopeless ................... More than half the days (2)
+3. Trouble falling/staying asleep, or sleeping too much .... Several days (1)
+4. Feeling tired or having little energy ................... Nearly every day (3)
+5. Poor appetite or overeating ............................. Several days (1)
+6. Feeling bad about yourself .............................. More than half the days (2)
+7. Trouble concentrating on things ......................... Several days (1)
+8. Moving/speaking slowly OR being fidgety/restless ........ Not at all (0)
+9. Thoughts of being better off dead or hurting yourself ... Not at all (0)
+
+TOTAL SCORE: 13 / 27
+SEVERITY: Moderate Depression
+
+Functional impairment: "Somewhat difficult"
+
+——————————————————————
+Scored and reviewed by: ${doc.author}`;
+      }
+      if (doc.title.includes('GAD-7')) {
+        return `GAD-7 GENERALIZED ANXIETY DISORDER SCALE
+Date: ${doc.date} | Patient: ${patient?.name} | Completed via: Patient Portal
+
+Over the last 2 weeks, how often have you been bothered by:
+
+1. Feeling nervous, anxious, or on edge ................... Several days (1)
+2. Not being able to stop or control worrying ............. More than half the days (2)
+3. Worrying too much about different things ............... Several days (1)
+4. Trouble relaxing ....................................... Nearly every day (3)
+5. Being so restless it is hard to sit still .............. Not at all (0)
+6. Becoming easily annoyed or irritable ................... Several days (1)
+7. Feeling afraid as if something awful might happen ...... More than half the days (2)
+
+TOTAL SCORE: 10 / 21
+SEVERITY: Moderate Anxiety
+
+——————————————————————
+Scored and reviewed by: ${doc.author}`;
+      }
+      if (doc.title.includes('AUDIT')) {
+        return `AUDIT-C ALCOHOL USE DISORDERS IDENTIFICATION TEST
+Date: ${doc.date} | Patient: ${patient?.name}
+
+1. How often do you have a drink containing alcohol?
+   → 2-4 times a month (2)
+
+2. How many drinks containing alcohol do you have on a typical day?
+   → 5 or 6 (3)
+
+3. How often do you have six or more drinks on one occasion?
+   → Weekly (4)
+
+AUDIT-C SCORE: 9 / 12
+INTERPRETATION: High risk — likely alcohol dependence
+
+Referred for: Full AUDIT assessment and SUD counseling
+
+——————————————————————
+Completed by: Patient | Reviewed by: ${doc.author}`;
+      }
+      return `CLINICAL ASSESSMENT\n\nDocument: ${doc.title}\nDate: ${doc.date}\nAuthor: ${doc.author}\n\n[Assessment content on file]`;
+    }
+
+    if (doc.type === 'Safety Assessment') {
+      return `COLUMBIA SUICIDE SEVERITY RATING SCALE (C-SSRS)
+Date: ${doc.date} | Patient: ${patient?.name} | Clinician: ${doc.author}
+
+IDEATION INTENSITY:
+Frequency: Daily
+Duration: 1–5 minutes per episode
+Controllability: Unable to control
+Deterrents: Yes — patient identifies family as a deterrent
+Reasons for ideation: Hopelessness, feeling like a burden
+
+SUICIDAL BEHAVIOR HISTORY:
+Lifetime attempts: 0
+Most recent ideation level: Active ideation without plan
+
+C-SSRS RISK LEVEL: Moderate–High
+
+CLINICAL DECISION:
+Safety plan reviewed and updated. Increased session frequency to weekly.
+Crisis resources provided. No hospitalization required at this time.
+Patient contracted for safety verbally and in writing.
+
+——————————————————————
+Clinician Signature: ${doc.author}`;
+    }
+
+    if (doc.type === 'Crisis Document') {
+      return `STANLEY-BROWN SAFETY PLAN
+Date: ${doc.date} | Patient: ${patient?.name}
+
+STEP 1 — Warning Signs:
+• Feeling hopeless about the future
+• Isolating from friends and family
+• Stopping medications
+
+STEP 2 — Internal Coping Strategies:
+• Go for a walk outside
+• Practice 4-7-8 breathing for 5 minutes
+• Journal about what I am grateful for
+
+STEP 3 — Social Contacts (Distraction):
+• Emma (Best Friend): (206) 555-0391
+• Mom: (206) 555-0422
+
+STEP 4 — Crisis Contacts:
+• Dr. Sarah Jenkins: (206) 555-0100
+• 988 Suicide & Crisis Lifeline: 988
+• Crisis Text Line: Text HOME to 741741
+
+STEP 5 — Professional Resources:
+• Dr. Sarah Jenkins, MD — M–F 9am–5pm
+• Ascend IOP Program: (206) 555-0200
+
+STEP 6 — Means Restriction:
+Firearms removed from home and stored at brother's house.
+Medications held by mother and dispensed daily.
+
+———
+Patient Signature: _____________________ Date: ${doc.date}
+Provider Signature: Dr. Sarah Jenkins    Date: ${doc.date}`;
+    }
+
+    if (doc.type === 'Consent') {
+      return `INFORMED CONSENT FOR PSYCHIATRIC TREATMENT
+Date: ${doc.date} | Patient: ${patient?.name} | Provider: ${doc.author}
+
+I, ${patient?.name ?? '[Patient Name]'}, consent to psychiatric evaluation and treatment by Dr. Sarah Jenkins, MD.
+
+I understand that:
+1. Treatment may include medication management, psychotherapy referrals, and crisis intervention.
+2. Medications carry risks and benefits that have been explained to me.
+3. I have the right to refuse treatment at any time.
+4. My records are confidential except as required by law (duty to warn, mandated reporting).
+5. Telehealth services may be used and carry the same confidentiality protections.
+
+HIPAA Notice: I have received and reviewed the Notice of Privacy Practices.
+
+Emergency Contact Authorization: I authorize contacting my emergency contact in a psychiatric emergency.
+
+———
+Patient Signature: _____________________ Date: ${doc.date}
+Provider Signature: Dr. Sarah Jenkins    Date: ${doc.date}
+Witness: _____________________________ Date: ${doc.date}`;
+    }
+
+    if (doc.type === 'External Records') {
+      return `EXTERNAL RECORDS — RECEIVED
+Document: ${doc.title}
+Date Received: ${doc.date}
+Source: ${doc.author}
+Patient: ${patient?.name}
+
+[External records received and scanned into chart. Reviewed by Dr. Sarah Jenkins.]
+
+Summary of relevant history from external provider:
+• Previous psychiatric diagnoses confirmed
+• Prior medication trials documented
+• No prior hospitalizations noted
+• Patient in therapy with previous provider for approximately 18 months
+
+Records reviewed and integrated into clinical assessment.
+
+——————————————————————
+Reviewed by: Dr. Sarah Jenkins, MD
+Date of Review: ${doc.date}`;
+    }
+
+    return `DOCUMENT: ${doc.title}\nType: ${doc.type}\nDate: ${doc.date}\nAuthor: ${doc.author}\n\n[Document content on file]`;
   };
 
   return (
@@ -733,7 +921,15 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
                     <div className={`absolute -left-5 top-3 w-4 h-4 rounded-full border-2 border-white ${event.bg} flex items-center justify-center`}>
                       <span className={`material-symbols-outlined text-[10px] ${event.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{event.icon}</span>
                     </div>
-                    <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/10 hover:shadow-sm transition-shadow">
+                    <div
+                      className={`bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/10 hover:shadow-sm transition-shadow ${event.type === 'Note' ? 'cursor-pointer hover:bg-surface-container-low/30' : ''}`}
+                      onClick={() => {
+                        if (event.type === 'Note') {
+                          const note = patientNotes.find(n => n.date === event.date && n.type === event.title);
+                          if (note) { setSelectedNote(note); setShowNoteModal(true); }
+                        }
+                      }}
+                    >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
@@ -992,7 +1188,7 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
               <div className="col-span-full py-12 text-center text-on-surface-variant">No documents found.</div>
             ) : (
               patientDocs.map(doc => (
-                <div key={doc.id} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 flex items-start gap-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div key={doc.id} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 flex items-start gap-4 hover:shadow-md transition-shadow cursor-pointer hover:bg-surface-container-low/50 transition-colors" onClick={() => { setSelectedDoc(doc); setShowDocModal(true); }}>
                   <div className="bg-primary/10 p-3 rounded-lg text-primary">
                     <span className="material-symbols-outlined">description</span>
                   </div>
@@ -1217,6 +1413,90 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
                 >
                   Save Vitals
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Document Viewer Modal ── */}
+      {showDocModal && selectedDoc && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowDocModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-outline-variant/10 flex items-center justify-between flex-shrink-0">
+              <div>
+                <h3 className="font-headline font-bold text-on-surface">{selectedDoc.title}</h3>
+                <p className="text-xs text-on-surface-variant mt-0.5">{selectedDoc.type} · {selectedDoc.date} · {selectedDoc.author}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => addToast({ type: 'info', title: 'Printing…', message: `${selectedDoc.title} sent to printer.` })}
+                  className="p-2 hover:bg-surface-container-low rounded-lg text-on-surface-variant"
+                >
+                  <span className="material-symbols-outlined text-sm">print</span>
+                </button>
+                <button onClick={() => setShowDocModal(false)} className="p-2 hover:bg-surface-container-low rounded-lg">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <pre className="text-xs font-mono text-on-surface leading-relaxed whitespace-pre-wrap bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
+                {getDocumentContent(selectedDoc)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Note Detail Modal ── */}
+      {showNoteModal && selectedNote && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowNoteModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-outline-variant/10 flex items-center justify-between flex-shrink-0">
+              <div>
+                <h3 className="font-headline font-bold text-on-surface">{selectedNote.type}</h3>
+                <p className="text-xs text-on-surface-variant mt-0.5">{selectedNote.date} · {selectedNote.author}</p>
+              </div>
+              <button onClick={() => setShowNoteModal(false)} className="p-2 hover:bg-surface-container-low rounded-lg">
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1 space-y-5">
+              <div>
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Subjective</h4>
+                <p className="text-sm text-on-surface leading-relaxed bg-surface-container-low rounded-xl p-4">{selectedNote.subjective}</p>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Objective / Mental Status</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(selectedNote.objective as Record<string, boolean>).map(([key, val]) => (
+                    <div key={key} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium ${val ? 'bg-tertiary/10 text-tertiary' : 'bg-error/10 text-error'}`}>
+                      <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>{val ? 'check_circle' : 'cancel'}</span>
+                      {key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Assessment</h4>
+                <p className="text-sm text-on-surface leading-relaxed bg-surface-container-low rounded-xl p-4">{selectedNote.assessment}</p>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Plan</h4>
+                <p className="text-sm text-on-surface leading-relaxed bg-surface-container-low rounded-xl p-4">{selectedNote.plan}</p>
+              </div>
+              {selectedNote.billing && (
+                <div>
+                  <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Billing</h4>
+                  <div className="bg-surface-container-low rounded-xl p-4 flex gap-4 text-sm">
+                    <span><span className="text-on-surface-variant text-xs">CPT:</span> <span className="font-bold">{selectedNote.billing.cptCode}</span></span>
+                    <span><span className="text-on-surface-variant text-xs">ICD-10:</span> <span className="font-bold">{selectedNote.billing.icd10Codes?.join(', ')}</span></span>
+                  </div>
+                </div>
+              )}
+              <div className="pt-3 border-t border-outline-variant/10">
+                <p className="text-xs text-on-surface-variant text-center">✓ Signed by {selectedNote.author} on {selectedNote.date}</p>
               </div>
             </div>
           </div>

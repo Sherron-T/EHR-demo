@@ -8,11 +8,14 @@ interface ScheduleProps {
 }
 
 export default function Schedule({ onViewChange }: ScheduleProps) {
-  const { appointments, patients, addAppointment, setCurrentPatientId } = useData();
+  const { appointments, patients, addAppointment, setCurrentPatientId, updateAppointmentStatus, cancelAppointment } = useData();
   const { addToast } = useToast();
   const [viewMode, setViewMode] = useState('Week');
   const [filters, setFilters] = useState({ intake: true, medCheck: true, urgent: true });
-  const [currentDate, setCurrentDate] = useState(new Date(2024, 9, 21));
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [selectedAppt, setSelectedAppt] = useState<typeof appointments[0] | null>(null);
+  const [showApptModal, setShowApptModal] = useState(false);
 
   // New appointment modal state
   const [showModal, setShowModal] = useState(false);
@@ -120,6 +123,19 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
     onViewChange('patients');
   };
 
+  const handleApptAction = (appt: typeof appointments[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedAppt(appt);
+    setShowApptModal(true);
+  };
+
+  const STATUS_TRANSITIONS: Record<string, { label: string; next: typeof appointments[0]['status']; color: string }[]> = {
+    'Scheduled':  [{ label: 'Confirm Appt', next: 'Confirmed', color: 'bg-primary text-white' }, { label: 'Cancel', next: 'Scheduled', color: 'bg-error/10 text-error' }],
+    'Confirmed':  [{ label: 'Check In → Lobby', next: 'In Lobby', color: 'bg-[#7c5700] text-white' }],
+    'In Lobby':   [{ label: 'Start Session', next: 'Completed', color: 'bg-tertiary text-white' }],
+    'Completed':  [],
+  };
+
   const apptColor = (type: string) => {
     if (type === 'Intake') return { bg: 'bg-primary-fixed/40 border-primary', text: 'text-on-primary-fixed-variant' };
     if (type === 'Med Check') return { bg: 'bg-tertiary-fixed/40 border-tertiary', text: 'text-on-tertiary-fixed-variant' };
@@ -151,7 +167,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
             <button onClick={handlePrev} className="p-1.5 hover:bg-white rounded-md transition-colors text-on-surface-variant">
               <span className="material-symbols-outlined text-sm">chevron_left</span>
             </button>
-            <button onClick={() => setCurrentDate(new Date('2024-10-21'))} className="text-sm font-bold text-primary hover:underline px-2">Today</button>
+            <button onClick={() => setCurrentDate(new Date())} className="text-sm font-bold text-primary hover:underline px-2">Today</button>
             <button onClick={handleNext} className="p-1.5 hover:bg-white rounded-md transition-colors text-on-surface-variant">
               <span className="material-symbols-outlined text-sm">chevron_right</span>
             </button>
@@ -207,7 +223,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
                 const dateStr = formatDateStr(day);
                 const dayAppts = appointments.filter(a => a.date === dateStr);
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-                const isToday = dateStr === '2024-10-21';
+                const isToday = dateStr === formatDateStr(new Date());
                 return (
                   <div
                     key={i}
@@ -246,7 +262,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
             <div className="grid border-b border-outline-variant/10 bg-surface-container-low/50" style={gridColsStyle}>
               <div className="p-4 border-r border-outline-variant/10 flex items-center justify-center text-xs font-bold text-on-surface-variant uppercase">Time</div>
               {activeDays.map((day, i) => {
-                const isToday = formatDateStr(day) === '2024-10-21';
+                const isToday = formatDateStr(day) === formatDateStr(new Date());
                 const apptCount = appointments.filter(a => a.date === formatDateStr(day)).length;
                 return (
                   <div key={i} className={`p-4 border-r border-outline-variant/10 text-center ${isToday ? 'bg-primary/5' : ''}`}>
@@ -264,7 +280,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
               <div className="absolute inset-0 grid pointer-events-none" style={gridColsStyle}>
                 <div className="border-r border-outline-variant/10"></div>
                 {activeDays.map((day, i) => (
-                  <div key={i} className={`border-r border-outline-variant/10 ${formatDateStr(day) === '2024-10-21' ? 'bg-primary/[0.03]' : ''}`}></div>
+                  <div key={i} className={`border-r border-outline-variant/10 ${formatDateStr(day) === formatDateStr(new Date()) ? 'bg-primary/[0.03]' : ''}`}></div>
                 ))}
               </div>
 
@@ -301,10 +317,14 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
                             >
                               <div>
                                 <p className={`text-xs font-bold truncate ${c.text}`}>{patient.name}</p>
-                                <p className={`text-[10px] truncate ${c.text}/80`}>{appt.type} · {appt.duration}m</p>
-                                <span className={`text-[9px] font-bold px-1 py-0.5 rounded mt-0.5 inline-block ${appt.status === 'In Lobby' ? 'bg-primary text-white' : appt.status === 'Confirmed' ? 'bg-tertiary/30 text-tertiary' : 'bg-white/50 text-on-surface'}`}>
+                                <button
+                                  onClick={(e) => handleApptAction(appt, e)}
+                                  className="mt-1 text-[9px] font-bold opacity-70 hover:opacity-100 flex items-center gap-0.5"
+                                >
+                                  <span className="material-symbols-outlined text-[10px]">more_horiz</span>
                                   {appt.status}
-                                </span>
+                                </button>
+                                <p className={`text-[10px] truncate ${c.text}/80`}>{appt.type} · {appt.duration}m</p>
                               </div>
                               {height >= 44 && (
                                 <button
@@ -327,6 +347,96 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
           </>
         )}
       </div>
+
+      {/* Appointment Action Modal */}
+      {showApptModal && selectedAppt && (() => {
+        const pt = patients.find(p => p.id === selectedAppt.patientId);
+        const transitions = STATUS_TRANSITIONS[selectedAppt.status] ?? [];
+        const statusColors: Record<string, string> = {
+          'Scheduled': 'bg-surface-container-high text-on-surface-variant',
+          'Confirmed': 'bg-primary/10 text-primary',
+          'In Lobby': 'bg-[#7c5700]/10 text-[#7c5700]',
+          'Completed': 'bg-tertiary/10 text-tertiary',
+        };
+        return (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowApptModal(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-headline font-bold text-on-surface">{pt?.name ?? 'Unknown Patient'}</h2>
+                    <p className="text-sm text-on-surface-variant">{selectedAppt.type} · {selectedAppt.date} at {selectedAppt.time} · {selectedAppt.duration} min</p>
+                  </div>
+                  <button onClick={() => setShowApptModal(false)} className="p-1.5 hover:bg-surface-container-low rounded-lg">
+                    <span className="material-symbols-outlined text-sm text-on-surface-variant">close</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 mb-5">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusColors[selectedAppt.status] ?? 'bg-surface-container-high text-on-surface-variant'}`}>
+                    {selectedAppt.status}
+                  </span>
+                  {pt && <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    pt.riskScore === 'Severe' || pt.riskScore === 'High' ? 'bg-error/10 text-error' : 'bg-surface-container-high text-on-surface-variant'
+                  }`}>{pt.riskScore} Risk</span>}
+                </div>
+
+                {pt && (
+                  <div className="bg-surface-container-low rounded-xl p-3 mb-4 text-xs space-y-1">
+                    <p><span className="font-bold text-on-surface-variant">MRN:</span> {pt.mrn}</p>
+                    <p><span className="font-bold text-on-surface-variant">Insurance:</span> {pt.insurance ?? 'Unknown'}</p>
+                    <p><span className="font-bold text-on-surface-variant">Phone:</span> {pt.phone ?? 'Not on file'}</p>
+                  </div>
+                )}
+
+                <div className="space-y-2 mb-4">
+                  {transitions.filter(t => t.label !== 'Cancel').map(t => (
+                    <button
+                      key={t.label}
+                      onClick={() => {
+                        updateAppointmentStatus(selectedAppt.id, t.next);
+                        addToast({ type: 'success', title: 'Status Updated', message: `${pt?.name} → ${t.next}` });
+                        setShowApptModal(false);
+                      }}
+                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 ${t.color}`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => { setCurrentPatientId(selectedAppt.patientId); onViewChange('patients'); setShowApptModal(false); }}
+                    className="py-2.5 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    Open Chart
+                  </button>
+                  <button
+                    onClick={() => { setCurrentPatientId(selectedAppt.patientId); onViewChange('new_note'); setShowApptModal(false); }}
+                    className="py-2.5 rounded-xl text-sm font-bold bg-surface-container-low text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  >
+                    Write Note
+                  </button>
+                </div>
+
+                {selectedAppt.status !== 'Completed' && (
+                  <button
+                    onClick={() => {
+                      cancelAppointment(selectedAppt.id);
+                      addToast({ type: 'warning', title: 'Appointment Cancelled', message: `${pt?.name}'s ${selectedAppt.type} on ${selectedAppt.date} has been removed.` });
+                      setShowApptModal(false);
+                    }}
+                    className="w-full mt-3 py-2 rounded-xl text-xs font-bold text-error hover:bg-error/10 transition-colors"
+                  >
+                    Cancel Appointment
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* New Appointment Modal */}
       {showModal && (

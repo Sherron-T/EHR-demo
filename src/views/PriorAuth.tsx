@@ -31,6 +31,13 @@ export default function PriorAuth({ onViewChange }: PriorAuthProps) {
   const [filter, setFilter] = useState<'All' | PriorAuthType['status']>('All');
   const [showModal, setShowModal] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAppealModal, setShowAppealModal] = useState(false);
+  const [appealPA, setAppealPA] = useState<typeof priorAuths[0] | null>(null);
+  const [appealCopied, setAppealCopied] = useState(false);
+  const [showFaxModal, setShowFaxModal] = useState(false);
+  const [faxPA, setFaxPA] = useState<typeof priorAuths[0] | null>(null);
+  const [faxSending, setFaxSending] = useState(false);
+  const [faxSent, setFaxSent] = useState(false);
   const [form, setForm] = useState({
     patientId: '',
     medication: '',
@@ -76,6 +83,48 @@ export default function PriorAuth({ onViewChange }: PriorAuthProps) {
     addToast({ type: 'success', title: 'PA Request Created', message: `Draft saved for ${form.medication}` });
     setShowModal(false);
     setForm({ patientId: '', medication: '', indication: '', insurancePlan: '', notes: '' });
+  };
+
+  const generateAppealLetter = (pa: typeof priorAuths[0]) => {
+    const pt = getPatient(pa.patientId);
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    return `${today}
+
+Medical Director, Appeals Department
+${pa.insurancePlan}
+
+RE: APPEAL FOR DENIAL OF PRIOR AUTHORIZATION
+Patient: ${pt?.name ?? 'Unknown'} | MRN: ${pt?.mrn ?? 'N/A'} | DOB: ${pt?.dob ?? 'N/A'}
+Medication: ${pa.medication}
+Diagnosis: ${pa.indication}
+Original PA Reference: ${pa.id.toUpperCase()}
+Denial Date: ${pa.determinationDate ?? 'On file'}
+
+Dear Medical Director:
+
+I am writing to formally appeal the denial of prior authorization for ${pa.medication} for my patient, ${pt?.name ?? 'this patient'}.
+
+CLINICAL SUMMARY:
+${pt?.name ?? 'The patient'} is a ${pt?.age ?? 'adult'} ${pt?.gender ?? 'patient'} with a diagnosis of ${pa.indication}. This patient has been under my care and has demonstrated a medically necessary need for the requested medication based on the following clinical findings:
+
+1. The patient has failed multiple alternative therapies, including those required under step therapy protocols.
+2. The requested medication is indicated per current clinical practice guidelines for this diagnosis.
+3. Alternative therapies are medically contraindicated or have resulted in inadequate therapeutic response.
+
+MEDICAL NECESSITY:
+${pa.medication} is medically necessary for this patient because the current symptom burden significantly impairs daily functioning and quality of life. Continued denial places the patient at risk for clinical deterioration.
+
+REQUESTED ACTION:
+I respectfully request an expedited review and approval of this prior authorization request. I am available for a peer-to-peer review at your convenience.
+
+Enclosures: Clinical notes, treatment history, laboratory results
+
+Sincerely,
+
+Dr. Sarah Jenkins, MD
+Board Certified Psychiatrist | NPI: 1234567890
+Psychiatry Care Associates | (206) 555-0100
+dr.jenkins@psychiatrycare.com`;
   };
 
   const allMedNames = [
@@ -262,26 +311,24 @@ export default function PriorAuth({ onViewChange }: PriorAuthProps) {
 
                     <div className="flex gap-2 pt-1">
                       <button
-                        onClick={() => {
-                          addToast({ type: 'info', title: 'Appeal Letter Generated', message: 'Draft appeal letter created and ready to edit.' });
-                        }}
-                        className="px-3 py-2 text-xs font-bold text-on-surface-variant bg-surface-container-lowest border border-outline-variant/20 rounded-lg hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1.5"
+                        onClick={() => { setAppealPA(pa); setAppealCopied(false); setShowAppealModal(true); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors"
                       >
                         <span className="material-symbols-outlined text-sm">description</span>
                         Generate Appeal Letter
                       </button>
                       <button
-                        onClick={() => addToast({ type: 'info', title: 'Fax Queued', message: `PA documentation sent to ${pa.insurancePlan} fax on file.` })}
-                        className="px-3 py-2 text-xs font-bold text-on-surface-variant bg-surface-container-lowest border border-outline-variant/20 rounded-lg hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1.5"
+                        onClick={() => { setFaxPA(pa); setFaxSent(false); setFaxSending(false); setShowFaxModal(true); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low text-on-surface-variant text-xs font-bold rounded-lg hover:bg-surface-container-highest transition-colors"
                       >
                         <span className="material-symbols-outlined text-sm">fax</span>
                         Fax to Insurance
                       </button>
                       <button
-                        onClick={() => addToast({ type: 'success', title: 'Peer-to-Peer Requested', message: 'P2P review call scheduled with insurance medical director.' })}
-                        className="px-3 py-2 text-xs font-bold text-on-surface-variant bg-surface-container-lowest border border-outline-variant/20 rounded-lg hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1.5"
+                        onClick={() => addToast({ type: 'success', title: 'P2P Requested', message: `Peer-to-peer review request submitted to ${pa.insurancePlan}. Expect a callback within 24–48 business hours.` })}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low text-on-surface-variant text-xs font-bold rounded-lg hover:bg-surface-container-highest transition-colors"
                       >
-                        <span className="material-symbols-outlined text-sm">call</span>
+                        <span className="material-symbols-outlined text-sm">phone_in_talk</span>
                         Request Peer-to-Peer
                       </button>
                     </div>
@@ -292,6 +339,100 @@ export default function PriorAuth({ onViewChange }: PriorAuthProps) {
           })
         )}
       </div>
+
+      {/* Appeal Letter Modal */}
+      {showAppealModal && appealPA && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowAppealModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-outline-variant/10 flex items-center justify-between flex-shrink-0">
+              <div>
+                <h3 className="font-headline font-bold text-on-surface">Appeal Letter</h3>
+                <p className="text-xs text-on-surface-variant mt-0.5">{appealPA.medication} · {appealPA.insurancePlan}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(generateAppealLetter(appealPA)).then(() => {
+                      setAppealCopied(true);
+                      setTimeout(() => setAppealCopied(false), 2000);
+                    });
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${appealCopied ? 'bg-tertiary/10 text-tertiary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-highest'}`}
+                >
+                  <span className="material-symbols-outlined text-sm">{appealCopied ? 'check' : 'content_copy'}</span>
+                  {appealCopied ? 'Copied!' : 'Copy'}
+                </button>
+                <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all">
+                  <span className="material-symbols-outlined text-sm">print</span>
+                  Print
+                </button>
+                <button onClick={() => setShowAppealModal(false)} className="p-2 hover:bg-surface-container-low rounded-lg ml-1">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <pre className="text-xs font-mono text-on-surface leading-relaxed whitespace-pre-wrap bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
+                {generateAppealLetter(appealPA)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fax Confirmation Modal */}
+      {showFaxModal && faxPA && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { if (!faxSending) setShowFaxModal(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+            {faxSent ? (
+              <div className="text-center py-4">
+                <div className="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <span className="material-symbols-outlined text-tertiary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                </div>
+                <h3 className="font-headline font-bold text-on-surface mb-2">Fax Transmitted</h3>
+                <p className="text-sm text-on-surface-variant mb-1">PA request sent to {faxPA.insurancePlan}</p>
+                <p className="text-xs text-on-surface-variant">Confirmation #: FAX-{Date.now().toString().slice(-6)}</p>
+                <button onClick={() => setShowFaxModal(false)} className="mt-5 w-full py-2.5 rounded-xl text-sm font-bold bg-primary text-white">Done</button>
+              </div>
+            ) : (
+              <>
+                <h3 className="font-headline font-bold text-on-surface mb-4">Fax to Insurance</h3>
+                <div className="bg-surface-container-low rounded-xl p-4 mb-4 space-y-1.5 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Recipient</span>
+                    <span className="font-medium text-on-surface text-xs">{faxPA.insurancePlan}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Fax Number</span>
+                    <span className="font-medium text-on-surface text-xs font-mono">(800) 555-0{Math.floor(100 + parseInt(faxPA.id.replace(/\D/g,'') || '1') * 37) % 900}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Document</span>
+                    <span className="font-medium text-on-surface text-xs">PA Request + Clinical Notes</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Pages</span>
+                    <span className="font-medium text-on-surface text-xs">~4 pages</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowFaxModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-surface-container-low text-on-surface-variant">Cancel</button>
+                  <button
+                    onClick={() => {
+                      setFaxSending(true);
+                      setTimeout(() => { setFaxSending(false); setFaxSent(true); addToast({ type: 'success', title: 'Fax Sent', message: `PA documents transmitted to ${faxPA.insurancePlan}.` }); }, 2000);
+                    }}
+                    disabled={faxSending}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-primary text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {faxSending ? <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Sending…</> : 'Send Fax'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* New PA Modal */}
       {showModal && (

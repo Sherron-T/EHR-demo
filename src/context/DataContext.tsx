@@ -188,6 +188,8 @@ interface DataContextType {
   addNote: (note: Omit<Note, 'id'>) => void;
   appointments: Appointment[];
   addAppointment: (appt: Omit<Appointment, 'id'>) => void;
+  updateAppointmentStatus: (id: string, status: Appointment['status']) => void;
+  cancelAppointment: (id: string) => void;
   labs: Lab[];
   addLab: (lab: Omit<Lab, 'id'>) => void;
   orders: Order[];
@@ -994,6 +996,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const addAppointment = (appt: Omit<Appointment, 'id'>) => {
     setAppointments(prev => [...prev, { ...appt, id: `a${Date.now()}` }]);
   };
+  const updateAppointmentStatus = (id: string, status: Appointment['status']) => {
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+  };
+  const cancelAppointment = (id: string) => {
+    setAppointments(prev => prev.filter(a => a.id !== id));
+  };
   const addLab = (lab: Omit<Lab, 'id'>) => {
     setLabs(prev => [{ ...lab, id: `l${Date.now()}` }, ...prev]);
   };
@@ -1054,7 +1062,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       patients, addPatient, currentPatientId, setCurrentPatientId,
       medications, addMedication, stopMedication,
       notes, addNote,
-      appointments, addAppointment,
+      appointments, addAppointment, updateAppointmentStatus, cancelAppointment,
       labs, addLab,
       orders, addOrder,
       documents,

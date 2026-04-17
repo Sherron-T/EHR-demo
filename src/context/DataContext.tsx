@@ -18,6 +18,12 @@ export interface Patient {
   lastVisit?: string;
   nextAppt?: string;
   provider?: string;
+  emergencyContact?: { name: string; phone: string; relationship: string };
+  preferredPharmacy?: string;
+  primaryCare?: string;
+  memberId?: string;
+  groupNumber?: string;
+  pronouns?: string;
 }
 
 export interface Medication {
@@ -29,6 +35,8 @@ export interface Medication {
   dispense: string;
   refills: number;
   status: 'Active' | 'Stopped';
+  stopDate?: string;
+  stopReason?: string;
 }
 
 export interface Note {
@@ -262,7 +270,13 @@ const initialPatients: Patient[] = [
     insurance: 'Blue Cross Blue Shield',
     lastVisit: d(-3),
     nextAppt: d(25),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Carol Thorne', phone: '(206) 555-0113', relationship: 'Wife' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Mark Sullivan, MD — Virginia Mason',
+    memberId: 'BCBS8829104',
+    groupNumber: 'GRP-8821',
+    pronouns: 'He/Him',
   },
   {
     id: 'p2',
@@ -283,7 +297,13 @@ const initialPatients: Patient[] = [
     insurance: 'Aetna',
     lastVisit: d(-30),
     nextAppt: d(0),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Elena Rodriguez', phone: '(206) 555-0248', relationship: 'Mother' },
+    preferredPharmacy: 'Walgreens #4821 · (206) 555-0344',
+    primaryCare: 'Dr. Lisa Park, MD — UW Medicine',
+    memberId: 'AET7738291',
+    groupNumber: 'GRP-5544',
+    pronouns: 'She/Her',
   },
   {
     id: 'p3',
@@ -304,7 +324,13 @@ const initialPatients: Patient[] = [
     insurance: 'United Healthcare',
     lastVisit: d(-56),
     nextAppt: d(0),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Megan Sullivan', phone: '(206) 555-0390', relationship: 'Wife' },
+    preferredPharmacy: 'Bartell Drugs #22 · (206) 555-0571',
+    primaryCare: 'Dr. Ben Harper, MD — Swedish Medical',
+    memberId: 'UHC1192837',
+    groupNumber: 'GRP-3301',
+    pronouns: 'He/Him',
   },
   {
     id: 'p4',
@@ -326,7 +352,13 @@ const initialPatients: Patient[] = [
     insurance: 'Medicaid',
     lastVisit: d(-3),
     nextAppt: d(0),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Anne Miller', phone: '(206) 555-0422', relationship: 'Mother' },
+    preferredPharmacy: 'Rite Aid #5501 · (206) 555-0689',
+    primaryCare: 'Dr. Tricia Okafor, MD — Community Health',
+    memberId: 'MCD5548291',
+    groupNumber: 'GRP-0001',
+    pronouns: 'She/Her',
   },
   {
     id: 'p5',
@@ -347,7 +379,13 @@ const initialPatients: Patient[] = [
     insurance: 'Cigna',
     lastVisit: d(-1),
     nextAppt: d(7),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Helen Wick', phone: '(206) 555-0554', relationship: 'Spouse' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Andrew Lim, MD — Group Health',
+    memberId: 'CGN9982731',
+    groupNumber: 'GRP-7712',
+    pronouns: 'He/Him',
   },
   {
     id: 'p6',
@@ -369,7 +407,13 @@ const initialPatients: Patient[] = [
     insurance: 'Blue Cross Blue Shield',
     lastVisit: d(-15),
     nextAppt: d(15),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Kwame Osei', phone: '(206) 555-0619', relationship: 'Brother' },
+    preferredPharmacy: 'Walgreens #4821 · (206) 555-0344',
+    primaryCare: 'Dr. Yemi Adeyemi, MD — Harborview',
+    memberId: 'BCBS3341928',
+    groupNumber: 'GRP-8821',
+    pronouns: 'She/Her',
   },
   {
     id: 'p7',
@@ -391,7 +435,13 @@ const initialPatients: Patient[] = [
     insurance: 'Medicare',
     lastVisit: d(-10),
     nextAppt: d(20),
-    provider: 'Dr. Sarah Jenkins'
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Janet Park', phone: '(206) 555-0745', relationship: 'Ex-Wife (Emergency Only)' },
+    preferredPharmacy: 'Bartell Drugs #22 · (206) 555-0571',
+    primaryCare: 'Dr. Sam Choi, MD — Swedish Internal Medicine',
+    memberId: 'MCR6674821',
+    groupNumber: 'MCR-A',
+    pronouns: 'He/Him',
   },
   {
     id: 'p8',
@@ -413,8 +463,210 @@ const initialPatients: Patient[] = [
     insurance: 'Aetna',
     lastVisit: d(-2),
     nextAppt: d(1),
-    provider: 'Dr. Sarah Jenkins'
-  }
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Deepa Nair', phone: '(206) 555-0892', relationship: 'Mother (legal guardian)' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Priti Sharma, MD — UW Medicine',
+    memberId: 'AET2219384',
+    groupNumber: 'GRP-5544',
+    pronouns: 'She/Her',
+  },
+  {
+    id: 'p9',
+    name: 'Marcus Thompson',
+    mrn: '4423819-F',
+    dob: '1982-06-14',
+    age: '43yo',
+    gender: 'Male',
+    image: '',
+    allergies: ['Haloperidol (EPS reaction)'],
+    riskScore: 'Moderate',
+    suicidalIdeation: 'Passive Ideation',
+    diagnoses: [
+      { code: 'F20.9', name: 'Schizophrenia, Unspecified', severity: 'Moderate' },
+      { code: 'F33.0', name: 'MDD, Recurrent, Mild', severity: 'Mild' }
+    ],
+    phone: '(206) 555-0923',
+    email: 'm.thompson@email.com',
+    insurance: 'Medicaid',
+    lastVisit: d(-14),
+    nextAppt: d(14),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Gloria Thompson', phone: '(206) 555-0924', relationship: 'Mother' },
+    preferredPharmacy: 'Bartell Drugs #22 · (206) 555-0571',
+    primaryCare: 'Dr. James Patel, MD — Swedish Primary Care',
+    memberId: 'MCD9923481',
+    groupNumber: 'GRP-0001',
+    pronouns: 'He/Him',
+  },
+  {
+    id: 'p10',
+    name: 'Linda Chen',
+    mrn: '7712938-G',
+    dob: '1963-02-28',
+    age: '63yo',
+    gender: 'Female',
+    image: '',
+    allergies: ['Sulfa Drugs', 'Tramadol (serotonin syndrome hx)'],
+    riskScore: 'Low',
+    suicidalIdeation: 'None',
+    diagnoses: [
+      { code: 'F33.1', name: 'MDD, Recurrent, Moderate', severity: 'Moderate' },
+      { code: 'F41.1', name: 'Generalized Anxiety Disorder', severity: 'Mild' }
+    ],
+    phone: '(206) 555-0341',
+    email: 'l.chen@email.com',
+    insurance: 'Medicare',
+    lastVisit: d(-21),
+    nextAppt: d(21),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Kevin Chen', phone: '(206) 555-0342', relationship: 'Son' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Amy Nguyen, MD — UW Medicine',
+    memberId: 'MCR1029384',
+    groupNumber: 'MCR-A',
+    pronouns: 'She/Her',
+  },
+  {
+    id: 'p11',
+    name: 'Tyler Brooks',
+    mrn: '8836472-H',
+    dob: '1997-09-05',
+    age: '28yo',
+    gender: 'Male',
+    image: '',
+    allergies: ['None Known'],
+    riskScore: 'Low',
+    suicidalIdeation: 'None',
+    diagnoses: [
+      { code: 'F42.2', name: 'OCD — Mixed Obsessional Thoughts and Acts', severity: 'Moderate' },
+      { code: 'F32.1', name: 'MDD, Single Episode, Moderate', severity: 'Moderate' }
+    ],
+    phone: '(206) 555-0184',
+    email: 't.brooks@email.com',
+    insurance: 'United Healthcare',
+    lastVisit: d(-7),
+    nextAppt: d(21),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Sandra Brooks', phone: '(206) 555-0185', relationship: 'Mother' },
+    preferredPharmacy: 'Walgreens #4821 · (206) 555-0344',
+    primaryCare: 'Dr. Chris Monroe, MD — Group Health',
+    memberId: 'UHC2938471',
+    groupNumber: 'GRP-2291',
+    pronouns: 'He/Him',
+  },
+  {
+    id: 'p12',
+    name: 'Nina Vasquez',
+    mrn: '5529183-I',
+    dob: '1980-11-17',
+    age: '45yo',
+    gender: 'Female',
+    image: '',
+    allergies: ['Lithium (toxicity at therapeutic levels)'],
+    riskScore: 'Moderate',
+    suicidalIdeation: 'Passive Ideation',
+    diagnoses: [
+      { code: 'F31.81', name: 'Bipolar II Disorder', severity: 'Moderate' },
+      { code: 'F90.0', name: 'ADHD, Predominantly Inattentive', severity: 'Mild' }
+    ],
+    phone: '(206) 555-0677',
+    email: 'n.vasquez@email.com',
+    insurance: 'Cigna',
+    lastVisit: d(-5),
+    nextAppt: d(28),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Carlos Vasquez', phone: '(206) 555-0678', relationship: 'Husband' },
+    preferredPharmacy: 'Rite Aid #5501 · (206) 555-0689',
+    primaryCare: 'Dr. Patricia Lee, MD — Virginia Mason',
+    memberId: 'CGN1192837',
+    groupNumber: 'GRP-4421',
+    pronouns: 'She/Her',
+  },
+  {
+    id: 'p13',
+    name: 'Omar Hassan',
+    mrn: '3318274-J',
+    dob: '1990-04-22',
+    age: '36yo',
+    gender: 'Male',
+    image: '',
+    allergies: ['Quetiapine (severe sedation)'],
+    riskScore: 'High',
+    suicidalIdeation: 'Active Ideation (No Plan)',
+    diagnoses: [
+      { code: 'F43.10', name: 'PTSD, Unspecified', severity: 'Severe' },
+      { code: 'G47.00', name: 'Insomnia Disorder', severity: 'Moderate' }
+    ],
+    phone: '(206) 555-0812',
+    email: 'o.hassan@email.com',
+    insurance: 'Tricare',
+    lastVisit: d(-4),
+    nextAppt: d(3),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Fatima Hassan', phone: '(206) 555-0813', relationship: 'Wife' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Rachel Stone, MD — VA Puget Sound',
+    memberId: 'TRC8821930',
+    groupNumber: 'GRP-TRC',
+    pronouns: 'He/Him',
+  },
+  {
+    id: 'p14',
+    name: 'Claire Johansson',
+    mrn: '1147392-K',
+    dob: '2005-07-30',
+    age: '20yo',
+    gender: 'Female',
+    image: '',
+    allergies: ['None Known'],
+    riskScore: 'High',
+    suicidalIdeation: 'Passive Ideation',
+    diagnoses: [
+      { code: 'F50.00', name: 'Anorexia Nervosa, Restricting Type', severity: 'Severe' },
+      { code: 'F41.1', name: 'Generalized Anxiety Disorder', severity: 'Moderate' }
+    ],
+    phone: '(206) 555-0291',
+    email: 'c.johansson@email.com',
+    insurance: 'Blue Cross Blue Shield',
+    lastVisit: d(-2),
+    nextAppt: d(5),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Ingrid Johansson', phone: '(206) 555-0292', relationship: 'Mother' },
+    preferredPharmacy: 'Walgreens #4821 · (206) 555-0344',
+    primaryCare: 'Dr. Monica Patel, MD — Seattle Children\'s (Adult Transition)',
+    memberId: 'BCBS3847291',
+    groupNumber: 'GRP-1199',
+    pronouns: 'She/Her',
+  },
+  {
+    id: 'p15',
+    name: 'Robert Kim',
+    mrn: '9901827-L',
+    dob: '1954-12-09',
+    age: '71yo',
+    gender: 'Male',
+    image: '',
+    allergies: ['Tricyclic Antidepressants (orthostatic hypotension)'],
+    riskScore: 'Moderate',
+    suicidalIdeation: 'Passive Ideation',
+    diagnoses: [
+      { code: 'F33.2', name: 'MDD, Recurrent, Severe (w/o psychosis)', severity: 'Severe' },
+      { code: 'G31.84', name: 'Mild Cognitive Impairment', severity: 'Mild' }
+    ],
+    phone: '(206) 555-0456',
+    email: 'r.kim@email.com',
+    insurance: 'Medicare',
+    lastVisit: d(-8),
+    nextAppt: d(22),
+    provider: 'Dr. Sarah Jenkins',
+    emergencyContact: { name: 'Susan Kim', phone: '(206) 555-0457', relationship: 'Daughter' },
+    preferredPharmacy: 'CVS Pharmacy #10293 · (206) 555-0192',
+    primaryCare: 'Dr. Harold Wong, MD — Group Health Geriatrics',
+    memberId: 'MCR7710293',
+    groupNumber: 'MCR-B',
+    pronouns: 'He/Him',
+  },
 ];
 
 const initialAppointments: Appointment[] = [
@@ -430,6 +682,13 @@ const initialAppointments: Appointment[] = [
   { id: 'a10',patientId: 'p2', date: d(4),  time: '9:30 AM',  duration: 60, type: 'Intake',    status: 'Scheduled' },
   { id: 'a11',patientId: 'p3', date: d(7),  time: '11:00 AM', duration: 20, type: 'Med Check', status: 'Scheduled' },
   { id: 'a12',patientId: 'p4', date: d(7),  time: '1:30 PM',  duration: 30, type: 'Urgent',    status: 'Scheduled' },
+  { id: 'a13', patientId: 'p14', date: d(0),  time: '3:00 PM',  duration: 45, type: 'Urgent',    status: 'Confirmed' },
+  { id: 'a14', patientId: 'p13', date: d(3),  time: '10:00 AM', duration: 60, type: 'Med Check', status: 'Scheduled' },
+  { id: 'a15', patientId: 'p9',  date: d(14), time: '9:00 AM',  duration: 30, type: 'Med Check', status: 'Scheduled' },
+  { id: 'a16', patientId: 'p10', date: d(21), time: '2:00 PM',  duration: 30, type: 'Med Check', status: 'Scheduled' },
+  { id: 'a17', patientId: 'p11', date: d(21), time: '11:00 AM', duration: 45, type: 'Intake',    status: 'Scheduled' },
+  { id: 'a18', patientId: 'p12', date: d(28), time: '1:00 PM',  duration: 45, type: 'Med Check', status: 'Scheduled' },
+  { id: 'a19', patientId: 'p15', date: d(22), time: '3:30 PM',  duration: 30, type: 'Med Check', status: 'Scheduled' },
 ];
 
 const initialNotes: Note[] = [
@@ -476,6 +735,22 @@ const initialMedications: Medication[] = [
   { id: 'm10', patientId: 'p6', name: 'Escitalopram (Lexapro)', dose: '10mg Oral Tablet', sig: 'Take 1 tablet by mouth daily.', dispense: '30 Tablet(s)', refills: 3, status: 'Active' },
   { id: 'm11', patientId: 'p6', name: 'Propranolol', dose: '10mg Oral Tablet', sig: 'Take 1 tablet by mouth as needed before anxiety-provoking situations.', dispense: '30 Tablet(s)', refills: 2, status: 'Active' },
   { id: 'm12', patientId: 'p8', name: 'Aripiprazole (Abilify)', dose: '10mg Oral Tablet', sig: 'Take 1 tablet by mouth daily.', dispense: '30 Tablet(s)', refills: 1, status: 'Active' },
+  { id: 'm13', patientId: 'p9',  name: 'Risperidone (Risperdal)', dose: '2mg Oral Tablet', sig: 'Take 1 tablet by mouth twice daily.', dispense: '60 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm14', patientId: 'p9',  name: 'Benztropine (Cogentin)', dose: '1mg Oral Tablet', sig: 'Take 1 tablet by mouth daily to prevent EPS.', dispense: '30 Tablet(s)', refills: 3, status: 'Active' },
+  { id: 'm15', patientId: 'p10', name: 'Sertraline (Zoloft)', dose: '50mg Oral Tablet', sig: 'Take 1 tablet by mouth daily in the morning.', dispense: '30 Tablet(s)', refills: 3, status: 'Active' },
+  { id: 'm16', patientId: 'p10', name: 'Mirtazapine (Remeron)', dose: '15mg Oral Tablet', sig: 'Take 1 tablet by mouth at bedtime.', dispense: '30 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm17', patientId: 'p11', name: 'Fluvoxamine (Luvox)', dose: '100mg Oral Tablet', sig: 'Take 1 tablet by mouth at bedtime.', dispense: '30 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm18', patientId: 'p12', name: 'Lamotrigine (Lamictal)', dose: '150mg Oral Tablet', sig: 'Take 1 tablet by mouth daily.', dispense: '30 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm19', patientId: 'p12', name: 'Lisdexamfetamine (Vyvanse)', dose: '30mg Oral Capsule', sig: 'Take 1 capsule by mouth each morning.', dispense: '30 Capsule(s)', refills: 0, status: 'Active' },
+  { id: 'm20', patientId: 'p13', name: 'Sertraline (Zoloft)', dose: '150mg Oral Tablet', sig: 'Take 1.5 tablets by mouth daily.', dispense: '45 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm21', patientId: 'p13', name: 'Prazosin', dose: '2mg Oral Tablet', sig: 'Take 1 tablet by mouth at bedtime for nightmares.', dispense: '30 Tablet(s)', refills: 2, status: 'Active' },
+  { id: 'm22', patientId: 'p14', name: 'Escitalopram (Lexapro)', dose: '10mg Oral Tablet', sig: 'Take 1 tablet by mouth daily. (Note: use with caution given BMI)', dispense: '30 Tablet(s)', refills: 1, status: 'Active' },
+  { id: 'm23', patientId: 'p15', name: 'Mirtazapine (Remeron)', dose: '30mg Oral Tablet', sig: 'Take 1 tablet by mouth at bedtime.', dispense: '30 Tablet(s)', refills: 3, status: 'Active' },
+  // Stopped medications (history)
+  { id: 'm24', patientId: 'p1',  name: 'Sertraline (Zoloft)', dose: '100mg Oral Tablet', sig: 'Take 1 tablet by mouth daily.', dispense: '30 Tablet(s)', refills: 0, status: 'Stopped', stopDate: d(-180), stopReason: 'Inadequate response after 8 weeks. Switched to Escitalopram.' },
+  { id: 'm25', patientId: 'p2',  name: 'Lithium Carbonate', dose: '300mg Oral Capsule', sig: 'Take 2 capsules by mouth at bedtime.', dispense: '60 Capsule(s)', refills: 0, status: 'Stopped', stopDate: d(-90), stopReason: 'GI intolerance and fine tremor. Switched to Lamotrigine + Quetiapine.' },
+  { id: 'm26', patientId: 'p4',  name: 'Fluoxetine (Prozac)', dose: '20mg Oral Tablet', sig: 'Take 1 tablet by mouth daily.', dispense: '30 Tablet(s)', refills: 0, status: 'Stopped', stopDate: d(-120), stopReason: 'Worsening anxiety and insomnia. Switched to Sertraline.' },
+  { id: 'm27', patientId: 'p9',  name: 'Olanzapine (Zyprexa)', dose: '10mg Oral Tablet', sig: 'Take 1 tablet by mouth at bedtime.', dispense: '30 Tablet(s)', refills: 0, status: 'Stopped', stopDate: d(-60), stopReason: 'Significant weight gain (+22 lbs in 3 months). Switched to Risperidone.' },
 ];
 
 const initialLabs: Lab[] = [
@@ -488,6 +763,15 @@ const initialLabs: Lab[] = [
   { id: 'l7', patientId: 'p2', date: d(-35), testName: 'Thyroid Panel (TSH, Free T4)', result: 'WNL', unit: '', referenceRange: '', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
   { id: 'l8', patientId: 'p4', date: d(-3),  testName: 'CBC with Differential', result: 'WNL', unit: '', referenceRange: '', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
   { id: 'l9', patientId: 'p1', date: d(-3),  testName: 'Lipid Panel', result: 'Pending', unit: '', referenceRange: '', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Pending' },
+  { id: 'l10', patientId: 'p9',  date: d(-14), testName: 'Fasting Glucose', result: '112', unit: 'mg/dL', referenceRange: '70 - 99', flag: 'High', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l11', patientId: 'p10', date: d(-21), testName: 'Comprehensive Metabolic Panel', result: 'WNL', unit: '', referenceRange: '', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l12', patientId: 'p11', date: d(-7),  testName: 'CBC with Differential', result: 'WNL', unit: '', referenceRange: '', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l13', patientId: 'p12', date: d(-5),  testName: 'Lamotrigine Level', result: '8.2', unit: 'mcg/mL', referenceRange: '3.0 - 14.0', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l14', patientId: 'p13', date: d(-4),  testName: 'Urine Drug Screen', result: 'Negative', unit: '', referenceRange: 'Negative', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l15', patientId: 'p14', date: d(-2),  testName: 'Comprehensive Metabolic Panel', result: 'BMP: Na 134, K 3.1, CO2 29', unit: '', referenceRange: 'Na 136-145, K 3.5-5.0', flag: 'Critical', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l16', patientId: 'p14', date: d(-2),  testName: 'Magnesium Level', result: '1.4', unit: 'mg/dL', referenceRange: '1.7 - 2.2', flag: 'Low', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l17', patientId: 'p15', date: d(-8),  testName: 'B12 / Folate', result: 'B12: 210', unit: 'pg/mL', referenceRange: '200 - 900', flag: 'Normal', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
+  { id: 'l18', patientId: 'p15', date: d(-8),  testName: 'Thyroid Panel (TSH, Free T4)', result: 'TSH: 6.8', unit: 'mIU/L', referenceRange: '0.4 - 4.0', flag: 'High', orderedBy: 'Dr. Sarah Jenkins', status: 'Resulted' },
 ];
 
 const initialOrders: Order[] = [
@@ -634,6 +918,13 @@ const initialVitals: Vital[] = [
   { id: 'v6', patientId: 'p4', date: d(-3),   weight: 124, bpSystolic: 108, bpDiastolic: 68, heartRate: 92, height: 65, bmi: 20.6, recordedBy: 'MA', notes: 'HR elevated — patient reports anxiety and poor sleep' },
   { id: 'v7', patientId: 'p7', date: d(-10),  weight: 218, bpSystolic: 136, bpDiastolic: 88, heartRate: 76, height: 72, bmi: 29.6, recordedBy: 'MA', notes: 'BP elevated. Advised to follow up with PCP.' },
   { id: 'v8', patientId: 'p8', date: d(-2),   weight: 138, bpSystolic: 112, bpDiastolic: 70, heartRate: 102, height: 63, bmi: 24.5, recordedBy: 'MA', notes: 'Tachycardia noted — patient in significant distress' },
+  { id: 'v9',  patientId: 'p9',  date: d(-14), weight: 195, bpSystolic: 124, bpDiastolic: 78, heartRate: 74, height: 70, bmi: 28.0, recordedBy: 'MA' },
+  { id: 'v10', patientId: 'p10', date: d(-21), weight: 162, bpSystolic: 132, bpDiastolic: 84, heartRate: 68, height: 63, bmi: 28.7, recordedBy: 'MA', notes: 'BP slightly elevated. Patient aware, monitoring.' },
+  { id: 'v11', patientId: 'p11', date: d(-7),  weight: 176, bpSystolic: 118, bpDiastolic: 74, heartRate: 70, height: 70, bmi: 25.3, recordedBy: 'MA' },
+  { id: 'v12', patientId: 'p12', date: d(-5),  weight: 154, bpSystolic: 116, bpDiastolic: 72, heartRate: 82, height: 66, bmi: 24.9, recordedBy: 'MA' },
+  { id: 'v13', patientId: 'p13', date: d(-4),  weight: 188, bpSystolic: 126, bpDiastolic: 80, heartRate: 88, height: 72, bmi: 25.5, recordedBy: 'MA', notes: 'HR elevated — hypervigilance consistent with PTSD presentation' },
+  { id: 'v14', patientId: 'p14', date: d(-2),  weight: 94,  bpSystolic: 92,  bpDiastolic: 58, heartRate: 58, height: 65, bmi: 15.6, recordedBy: 'MA', notes: 'CRITICAL LOW WEIGHT. BMI 15.6. HR bradycardic. Discussed medical stabilization urgency. PCP notified.' },
+  { id: 'v15', patientId: 'p15', date: d(-8),  weight: 171, bpSystolic: 138, bpDiastolic: 86, heartRate: 66, height: 69, bmi: 25.3, recordedBy: 'MA', notes: 'BP elevated. Reminded to take antihypertensive. PCP follow-up scheduled.' },
 ];
 
 const initialSafetyPlans: SafetyPlan[] = [
@@ -662,19 +953,19 @@ const initialSafetyPlans: SafetyPlan[] = [
 ];
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
-  const [patients, setPatients] = useLocalStorage<Patient[]>('ehr_patients_r2', initialPatients);
+  const [patients, setPatients] = useLocalStorage<Patient[]>('ehr_patients_r3', initialPatients);
   const [currentPatientId, setCurrentPatientId] = useLocalStorage<string | null>('ehr_currentPatientId_r2', 'p1');
-  const [medications, setMedications] = useLocalStorage<Medication[]>('ehr_medications_r2', initialMedications);
+  const [medications, setMedications] = useLocalStorage<Medication[]>('ehr_medications_r3', initialMedications);
   const [notes, setNotes] = useLocalStorage<Note[]>('ehr_notes_r2', initialNotes);
-  const [appointments, setAppointments] = useLocalStorage<Appointment[]>('ehr_appointments_r2', initialAppointments);
-  const [labs, setLabs] = useLocalStorage<Lab[]>('ehr_labs_r2', initialLabs);
+  const [appointments, setAppointments] = useLocalStorage<Appointment[]>('ehr_appointments_r3', initialAppointments);
+  const [labs, setLabs] = useLocalStorage<Lab[]>('ehr_labs_r3', initialLabs);
   const [orders, setOrders] = useLocalStorage<Order[]>('ehr_orders_r2', initialOrders);
   const [documents] = useLocalStorage<Document[]>('ehr_documents_r2', initialDocuments);
   const [outcomes, setOutcomes] = useLocalStorage<Outcome[]>('ehr_outcomes_r2', initialOutcomes);
   const [messages, setMessages] = useLocalStorage<Message[]>('ehr_messages_r2', initialMessages);
   const [referrals, setReferrals] = useLocalStorage<Referral[]>('ehr_referrals_r2', initialReferrals);
   const [priorAuths, setPriorAuths] = useLocalStorage<PriorAuth[]>('ehr_prior_auths_r2', initialPriorAuths);
-  const [vitals, setVitals] = useLocalStorage<Vital[]>('ehr_vitals_r2', initialVitals);
+  const [vitals, setVitals] = useLocalStorage<Vital[]>('ehr_vitals_r3', initialVitals);
   const [safetyPlans, setSafetyPlans] = useLocalStorage<SafetyPlan[]>('ehr_safety_plans_r2', initialSafetyPlans);
 
   const [tasks, setTasks] = useLocalStorage('ehr_tasks_r2', [

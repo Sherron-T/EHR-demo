@@ -47,6 +47,7 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
     addOrder, addLab,
     vitals, addVital,
     safetyPlans, upsertSafetyPlan,
+    outcomes,
   } = useData();
   const { addToast } = useToast();
 
@@ -85,7 +86,7 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
   });
   const [spSaved, setSpSaved] = useState(false);
 
-  const tabs = ['Summary', 'Outcomes', 'Timeline', 'Labs', 'Vitals', 'Orders', 'Documents'];
+  const tabs = ['Summary', 'Demographics', 'Outcomes', 'Timeline', 'Labs', 'Vitals', 'Orders', 'Documents'];
 
   const patient = patients.find(p => p.id === currentPatientId);
 
@@ -107,6 +108,19 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
   const patientVitals = vitals.filter(v => v.patientId === patient.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const existingSafetyPlan = safetyPlans.find(sp => sp.patientId === patient.id);
   const isHighRisk = patient.riskScore === 'High' || patient.riskScore === 'Severe';
+
+  const patientOutcomes = outcomes.filter(o => o.patientId === patient.id).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Care gaps — computed from patient data
+  const lastLabDate = patientLabs.length > 0 ? patientLabs.sort((a,b) => new Date(b.date).getTime()-new Date(a.date).getTime())[0].date : null;
+  const lastOutcome = patientOutcomes ? patientOutcomes[patientOutcomes.length - 1] : null;
+  const daysSinceLastLab = lastLabDate ? Math.floor((Date.now() - new Date(lastLabDate).getTime()) / 86400000) : 999;
+  const careGaps = [
+    daysSinceLastLab > 90 && { label: 'Annual Labs Overdue', detail: `Last drawn ${daysSinceLastLab} days ago`, icon: 'biotech', urgent: daysSinceLastLab > 180 },
+    patientNotes.length === 0 && { label: 'No Clinical Notes on File', detail: 'Initial documentation needed', icon: 'edit_note', urgent: true },
+    patientVitals.length === 0 && { label: 'No Vitals Recorded', detail: 'Baseline vitals needed', icon: 'monitor_heart', urgent: false },
+    isHighRisk && !existingSafetyPlan && { label: 'Safety Plan Required', detail: 'High/Severe risk — safety plan missing', icon: 'crisis_alert', urgent: true },
+  ].filter(Boolean) as { label: string; detail: string; icon: string; urgent: boolean }[];
 
   // Build a unified timeline from notes, labs, orders, and meds
   const timelineEvents = [
@@ -332,6 +346,25 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
         {activeTab === 'Summary' ? (
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
+              {careGaps.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm text-[#7c5700]" style={{fontVariationSettings:"'FILL' 1"}}>warning</span>
+                    Care Gaps ({careGaps.length})
+                  </h3>
+                  <div className="space-y-1.5">
+                    {careGaps.map((gap, i) => (
+                      <div key={i} className={`flex items-start gap-2.5 p-2.5 rounded-xl text-xs ${gap.urgent ? 'bg-error/8 border border-error/20' : 'bg-[#7c5700]/8 border border-[#7c5700]/20'}`}>
+                        <span className={`material-symbols-outlined text-sm flex-shrink-0 ${gap.urgent ? 'text-error' : 'text-[#7c5700]'}`} style={{fontVariationSettings:"'FILL' 1"}}>{gap.icon}</span>
+                        <div>
+                          <p className={`font-bold ${gap.urgent ? 'text-error' : 'text-[#7c5700]'}`}>{gap.label}</p>
+                          <p className="text-on-surface-variant">{gap.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <section className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
@@ -536,6 +569,146 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
                   </div>
                 </section>
               )}
+            </div>
+          </div>
+
+        ) : activeTab === 'Demographics' ? (
+          <div className="space-y-4">
+            {/* Insurance */}
+            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+              <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-sm text-primary" style={{fontVariationSettings:"'FILL' 1"}}>health_and_safety</span>
+                Insurance & Coverage
+              </h3>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Insurance Plan</p>
+                  <p className="font-medium text-on-surface">{patient.insurance ?? 'Not on file'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Member ID</p>
+                  <p className="font-medium text-on-surface font-mono">{patient.memberId ?? 'Not on file'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Group Number</p>
+                  <p className="font-medium text-on-surface font-mono">{patient.groupNumber ?? 'Not on file'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Coverage Type</p>
+                  <p className="font-medium text-on-surface">{patient.insurance?.includes('Medicare') || patient.insurance?.includes('Medicaid') ? 'Government' : 'Commercial'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Copay (Est.)</p>
+                  <p className="font-medium text-on-surface">{patient.insurance?.includes('Medicaid') ? '$0' : patient.insurance?.includes('Medicare') ? '$20 – $40' : '$30 – $50'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Eligibility Status</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary inline-block"></span>
+                    Verified {new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Patient Info */}
+            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+              <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-sm text-primary" style={{fontVariationSettings:"'FILL' 1"}}>person</span>
+                Patient Information
+              </h3>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Date of Birth</p>
+                  <p className="font-medium text-on-surface">{new Date(patient.dob + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Age</p>
+                  <p className="font-medium text-on-surface">{patient.age}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Gender</p>
+                  <p className="font-medium text-on-surface">{patient.gender}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Pronouns</p>
+                  <p className="font-medium text-on-surface">{patient.pronouns ?? 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Phone</p>
+                  <p className="font-medium text-on-surface">{patient.phone ?? 'Not on file'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Email</p>
+                  <p className="font-medium text-on-surface">{patient.email ?? 'Not on file'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">MRN</p>
+                  <p className="font-medium text-on-surface font-mono">{patient.mrn}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Emergency Contact & PCP */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+                <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm text-error" style={{fontVariationSettings:"'FILL' 1"}}>emergency</span>
+                  Emergency Contact
+                </h3>
+                {patient.emergencyContact ? (
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Name</p>
+                      <p className="font-medium text-on-surface">{patient.emergencyContact.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Relationship</p>
+                      <p className="font-medium text-on-surface">{patient.emergencyContact.relationship}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Phone</p>
+                      <p className="font-medium text-on-surface">{patient.emergencyContact.phone}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-on-surface-variant italic">Not on file</p>
+                )}
+              </div>
+
+              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+                <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm text-secondary" style={{fontVariationSettings:"'FILL' 1"}}>stethoscope</span>
+                  Primary Care Provider
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Provider</p>
+                    <p className="font-medium text-on-surface">{patient.primaryCare ?? 'Not assigned'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-0.5">Preferred Pharmacy</p>
+                    <p className="font-medium text-on-surface">{patient.preferredPharmacy ?? 'Not on file'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Allergies */}
+            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+              <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-sm text-error" style={{fontVariationSettings:"'FILL' 1"}}>medication_liquid</span>
+                Allergies & Adverse Reactions
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {patient.allergies.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-error/8 border border-error/20 rounded-xl text-xs">
+                    <span className="material-symbols-outlined text-sm text-error" style={{fontVariationSettings:"'FILL' 1"}}>warning</span>
+                    <span className="font-medium text-error">{a}</span>
+                  </div>
+                ))}
+                {patient.allergies.length === 0 && <p className="text-sm text-on-surface-variant italic">No known allergies</p>}
+              </div>
             </div>
           </div>
 

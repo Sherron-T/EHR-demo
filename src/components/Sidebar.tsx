@@ -46,7 +46,6 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
         </div>
         <div>
           <h2 className="font-headline font-bold text-on-surface leading-tight text-sm">Psychiatry Care</h2>
-          <p className="text-[10px] text-on-surface-variant font-label uppercase tracking-wider">High Fidelity EHR</p>
         </div>
       </div>
 

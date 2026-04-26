@@ -135,7 +135,7 @@ export default function PatientChart({ onViewChange }: PatientChartProps) {
     ...patientNotes.map(n => ({ date: n.date, type: 'Note', title: n.type, detail: n.subjective.slice(0, 80) + '...', icon: 'description', color: 'text-primary', bg: 'bg-primary/10' })),
     ...patientLabs.map(l => ({ date: l.date, type: 'Lab', title: l.testName, detail: `Result: ${l.result} ${l.unit} ${l.flag !== 'Normal' ? `· ${l.flag}` : ''}`.trim(), icon: 'biotech', color: l.flag !== 'Normal' ? 'text-error' : 'text-tertiary', bg: l.flag !== 'Normal' ? 'bg-error/10' : 'bg-tertiary/10' })),
     ...patientOrders.map(o => ({ date: o.date, type: 'Order', title: o.description, detail: `${o.type} · ${o.status}`, icon: 'assignment', color: 'text-secondary', bg: 'bg-secondary/10' })),
-    ...patientMeds.map(m => ({ date: patient.lastVisit ?? '2024-01-01', type: 'Medication', title: `Started: ${m.name}`, detail: m.dose, icon: 'medication', color: 'text-primary', bg: 'bg-primary/10' })),
+    ...patientMeds.map(m => ({ date: patient.lastVisit ?? new Date().toISOString().split('T')[0], type: 'Medication', title: `Started: ${m.name}`, detail: m.dose, icon: 'medication', color: 'text-primary', bg: 'bg-primary/10' })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleOrderSubmit = () => {

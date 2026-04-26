@@ -173,23 +173,8 @@ export default function Login({ onLogin }: LoginProps) {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-outline-variant/20 flex items-center justify-center gap-6 text-xs text-on-surface-variant">
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-              HIPAA Compliant
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
-              256-bit Encryption
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
-              SOC 2 Type II
-            </span>
-          </div>
-
-          <p className="text-center text-xs text-on-surface-variant mt-6">
-            © 2024 Psychiatry Care EHR · <span className="hover:text-primary cursor-pointer">Privacy Policy</span> · <span className="hover:text-primary cursor-pointer">Terms of Service</span>
+          <p className="text-center text-xs text-on-surface-variant mt-8">
+            © 2026 Psychiatry Care EHR · <span className="hover:text-primary cursor-pointer">Privacy Policy</span> · <span className="hover:text-primary cursor-pointer">Terms of Service</span>
           </p>
         </div>
       </div>

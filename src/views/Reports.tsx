@@ -58,9 +58,9 @@ const noShowData = [
 ];
 
 const complianceItems = [
-  { label: 'HIPAA Privacy Training', status: 'Completed', due: '2024-06-01', score: 100 },
-  { label: 'Annual Security Awareness Training', status: 'Completed', due: '2024-06-01', score: 100 },
-  { label: 'Suicide Risk Assessment Protocol', status: 'Completed', due: '2024-09-01', score: 95 },
+  { label: 'HIPAA Privacy Training', status: 'Completed', due: '2026-06-01', score: 100 },
+  { label: 'Annual Security Awareness Training', status: 'Completed', due: '2026-06-01', score: 100 },
+  { label: 'Suicide Risk Assessment Protocol', status: 'Completed', due: '2026-09-01', score: 95 },
   { label: 'Documentation Timeliness (48h)', status: 'Needs Attention', due: 'Ongoing', score: 82 },
   { label: 'Informed Consent on File', status: 'Completed', due: 'Per patient', score: 91 },
   { label: 'DEA Registration Renewal', status: 'Due Soon', due: '2025-01-15', score: null },
@@ -100,7 +100,7 @@ export default function Reports({ onViewChange }: ReportsProps) {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h1 className="text-3xl font-headline font-bold text-on-surface">Reports & Analytics</h1>
-          <p className="text-sm text-on-surface-variant mt-2">Clinic performance and patient population metrics. Data period: Oct 2024.</p>
+          <p className="text-sm text-on-surface-variant mt-2">Clinic performance and patient population metrics. Data period: Apr 2026.</p>
         </div>
         <div className="flex gap-4">
           <button className="px-4 py-2 bg-surface-container-low text-on-surface font-bold rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-2">
@@ -308,7 +308,7 @@ export default function Reports({ onViewChange }: ReportsProps) {
 
           {/* Status breakdown table */}
           <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm">
-            <h3 className="font-headline font-bold text-lg text-on-surface mb-4">Appointment Status — October 2024</h3>
+            <h3 className="font-headline font-bold text-lg text-on-surface mb-4">Appointment Status — April 2026</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Scheduled', count: appointments.filter(a=>a.status==='Scheduled').length, color: 'bg-secondary-container text-on-secondary-fixed-variant' },
@@ -436,7 +436,7 @@ export default function Reports({ onViewChange }: ReportsProps) {
 
           {/* Top CPT codes */}
           <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm">
-            <h3 className="font-headline font-bold text-lg text-on-surface mb-4">Top CPT Codes (Oct 2024)</h3>
+            <h3 className="font-headline font-bold text-lg text-on-surface mb-4">Top CPT Codes (Apr 2026)</h3>
             <table className="w-full text-sm">
               <thead className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">
                 <tr className="border-b border-outline-variant/10">
@@ -494,7 +494,7 @@ export default function Reports({ onViewChange }: ReportsProps) {
           <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant/10 bg-surface-container-low/30">
               <h3 className="font-headline font-bold text-lg text-on-surface">Provider Compliance Checklist</h3>
-              <p className="text-sm text-on-surface-variant">Dr. Sarah Jenkins · Period: 2024</p>
+              <p className="text-sm text-on-surface-variant">Dr. Sarah Jenkins · Period: 2026</p>
             </div>
             <div className="divide-y divide-outline-variant/10">
               {complianceItems.map(item => {

@@ -84,14 +84,6 @@ export default function TopNav({ currentView, onViewChange }: TopNavProps) {
   return (
     <header className="bg-surface-container-lowest flex justify-between items-center w-full px-8 h-16 shadow-ambient sticky top-0 z-30 border-b border-outline-variant/10">
       <div className="flex items-center gap-4">
-        <h1
-          className="text-xl font-bold font-headline text-primary tracking-tight cursor-pointer"
-          onClick={() => onViewChange('dashboard')}
-        >
-          Clinical Curator
-        </h1>
-        <div className="h-6 w-px bg-outline-variant/30 mx-2"></div>
-
         <div className="flex items-center gap-4">
           {currentPatient && (
             <div

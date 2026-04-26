@@ -39,7 +39,7 @@ export default function PatientOutcomes() {
   // Find medication start dates to overlay
   const patientMeds = medications.filter(m => m.patientId === patient.id);
   // We'll just mock a med start date for the demo if it's Elias Thorne
-  const medStartDate = patient.id === 'p1' ? '2024-04-12' : null;
+  const medStartDate = patient.id === 'p1' ? (() => { const d = new Date(); d.setDate(d.getDate() - 270); return d.toISOString().split('T')[0]; })() : null;
   const medStartFormatted = medStartDate ? new Date(medStartDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) : null;
 
   const handleSubmit = (e: React.FormEvent) => {

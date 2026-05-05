@@ -35,10 +35,9 @@ jobs:
         run: npm ci
 
       - name: Build
-        # Replace 'EHR-demo' below with your actual GitHub repository name
-        # e.g. if your repo URL is github.com/johndoe/my-ehr → use '/my-ehr/'
+        # Custom domain (sherron.live) serves from root, so base URL is /
         env:
-          VITE_BASE_URL: /EHR-demo/
+          VITE_BASE_URL: /
         run: npm run build
 
       - name: Upload artifact

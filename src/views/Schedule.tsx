@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ViewType } from '../App';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import Modal from '../components/Modal';
 
 interface ScheduleProps {
   onViewChange: (view: ViewType) => void;
@@ -359,8 +360,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
           'Completed': 'bg-tertiary/10 text-tertiary',
         };
         return (
-          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowApptModal(false)}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+          <Modal onClose={() => setShowApptModal(false)} maxWidth="max-w-md">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -433,8 +433,7 @@ export default function Schedule({ onViewChange }: ScheduleProps) {
                   </button>
                 )}
               </div>
-            </div>
-          </div>
+          </Modal>
         );
       })()}
 

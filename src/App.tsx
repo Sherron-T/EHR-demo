@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import TopNav from './components/TopNav';
 import Dashboard from './views/Dashboard';
@@ -35,9 +35,67 @@ export type ViewType =
   | 'superbill'
   | 'inbox';
 
+const ALL_VIEWS: ViewType[] = [
+  'dashboard', 'patient_list', 'patients', 'schedule', 'eprescribing',
+  'reports', 'new_note', 'telehealth', 'messaging', 'referrals',
+  'prior_auth', 'settings', 'superbill', 'inbox',
+];
+
+function viewFromHash(): ViewType {
+  const hash = window.location.hash.replace(/^#\/?/, '');
+  return (ALL_VIEWS as string[]).includes(hash) ? (hash as ViewType) : 'dashboard';
+}
+
+function MobileNotice({ onContinue }: { onContinue: () => void }) {
+  return (
+    <div className="min-h-screen bg-surface flex items-center justify-center p-6">
+      <div className="max-w-sm text-center">
+        <div className="w-14 h-14 rounded-2xl signature-gradient flex items-center justify-center mx-auto mb-5">
+          <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>desktop_windows</span>
+        </div>
+        <h1 className="font-headline font-bold text-xl text-on-surface mb-2">Best viewed on desktop</h1>
+        <p className="text-sm text-on-surface-variant leading-relaxed mb-6">
+          This EHR demo is designed for clinical workstations and works best on a larger screen.
+          You can continue on this device, but some layouts may not fit.
+        </p>
+        <button
+          onClick={onContinue}
+          className="px-6 py-3 signature-gradient text-white font-bold rounded-xl text-sm hover:opacity-90 transition-all"
+        >
+          Continue anyway
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AppContent() {
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [currentView, setCurrentViewState] = useState<ViewType>(viewFromHash);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileAcknowledged, setMobileAcknowledged] = useState(
+    () => window.innerWidth >= 1024 || window.sessionStorage.getItem('ehr_mobile_ack') === '1'
+  );
+
+  const setCurrentView = useCallback((view: ViewType) => {
+    setCurrentViewState(view);
+    if (viewFromHash() !== view) {
+      window.location.hash = `/${view}`;
+    }
+  }, []);
+
+  // Browser back/forward and manually edited URLs
+  useEffect(() => {
+    const onHashChange = () => setCurrentViewState(viewFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  if (!mobileAcknowledged) {
+    return <MobileNotice onContinue={() => {
+      window.sessionStorage.setItem('ehr_mobile_ack', '1');
+      setMobileAcknowledged(true);
+    }} />;
+  }
 
   if (!isLoggedIn) {
     return <Login onLogin={() => setIsLoggedIn(true)} />;

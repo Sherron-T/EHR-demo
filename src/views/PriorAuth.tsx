@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ViewType } from '../App';
 import { useData, PriorAuth as PriorAuthType } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import Modal from '../components/Modal';
 
 interface PriorAuthProps {
   onViewChange: (view: ViewType) => void;
@@ -342,8 +343,7 @@ dr.jenkins@psychiatrycare.com`;
 
       {/* Appeal Letter Modal */}
       {showAppealModal && appealPA && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowAppealModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <Modal onClose={() => setShowAppealModal(false)} maxWidth="max-w-2xl">
             <div className="p-5 border-b border-outline-variant/10 flex items-center justify-between flex-shrink-0">
               <div>
                 <h3 className="font-headline font-bold text-on-surface">Appeal Letter</h3>
@@ -376,14 +376,13 @@ dr.jenkins@psychiatrycare.com`;
                 {generateAppealLetter(appealPA)}
               </pre>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Fax Confirmation Modal */}
       {showFaxModal && faxPA && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { if (!faxSending) setShowFaxModal(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+        <Modal onClose={() => { if (!faxSending) setShowFaxModal(false); }} maxWidth="max-w-sm">
+          <div className="p-6">
             {faxSent ? (
               <div className="text-center py-4">
                 <div className="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -431,7 +430,7 @@ dr.jenkins@psychiatrycare.com`;
               </>
             )}
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* New PA Modal */}

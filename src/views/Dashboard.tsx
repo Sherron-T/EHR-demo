@@ -20,6 +20,12 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
+  const [showTour, setShowTour] = useState(() => window.localStorage.getItem('ehr_demo_tour_dismissed') !== '1');
+
+  const dismissTour = () => {
+    window.localStorage.setItem('ehr_demo_tour_dismissed', '1');
+    setShowTour(false);
+  };
 
   const handlePatientClick = (patientId: string) => {
     setCurrentPatientId(patientId);
@@ -51,6 +57,44 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
 
   return (
     <div className="p-8 space-y-8">
+      {/* Demo highlights — first-visit guide */}
+      {showTour && (
+        <section className="bg-gradient-to-r from-primary/5 to-tertiary/5 rounded-2xl p-6 border border-primary/15 relative">
+          <button
+            onClick={dismissTour}
+            className="absolute top-4 right-4 p-1.5 hover:bg-surface-container-low rounded-lg text-on-surface-variant"
+            title="Dismiss"
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
+            <h2 className="font-headline font-bold text-on-surface">Welcome to the demo</h2>
+          </div>
+          <p className="text-sm text-on-surface-variant mb-4">
+            Everything here is interactive and saves locally. A few flows worth trying:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {[
+              { icon: 'monitoring', title: 'Patient outcomes', desc: 'Open a chart and graph PHQ-9 / GAD-7 trends over time.', view: 'patients' as ViewType },
+              { icon: 'event_available', title: 'Run the schedule', desc: 'Check patients in and move appointments through the visit flow.', view: 'schedule' as ViewType },
+              { icon: 'gavel', title: 'Appeal a denial', desc: 'Generate an appeal letter and fax it to insurance.', view: 'prior_auth' as ViewType },
+              { icon: 'edit_note', title: 'Note templates', desc: 'Create and edit reusable SOAP note templates.', view: 'settings' as ViewType },
+            ].map(item => (
+              <button
+                key={item.title}
+                onClick={() => onViewChange(item.view)}
+                className="text-left bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/10 hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+              >
+                <span className="material-symbols-outlined text-primary text-lg mb-2 block" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                <p className="text-sm font-bold text-on-surface">{item.title}</p>
+                <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{item.desc}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* KPIs Section */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-surface-container-lowest p-6 rounded-xl ambient-shadow flex flex-col justify-between h-32 border-l-4 border-primary hover:-translate-y-1 transition-transform cursor-pointer">

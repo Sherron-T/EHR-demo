@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ViewType } from '../App';
 import { useToast } from '../context/ToastContext';
+import Modal from '../components/Modal';
 
 interface SettingsProps {
   onViewChange: (view: ViewType) => void;
@@ -50,7 +51,15 @@ export default function Settings({ onViewChange }: SettingsProps) {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
   const [showAuditLog, setShowAuditLog] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const resetDemoData = () => {
+    Object.keys(window.localStorage)
+      .filter(key => key.startsWith('ehr_'))
+      .forEach(key => window.localStorage.removeItem(key));
+    window.location.reload();
+  };
 
   const handleSave = () => {
     setSaved(true);
@@ -367,9 +376,8 @@ export default function Settings({ onViewChange }: SettingsProps) {
 
           {/* New Template Modal */}
           {showNewTemplate && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowNewTemplate(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-                <h3 className="font-headline font-bold text-on-surface mb-4">New Template</h3>
+            <Modal title="New Template" onClose={() => setShowNewTemplate(false)} maxWidth="max-w-sm">
+              <div className="p-6">
                 <div className="space-y-3 mb-5">
                   <div>
                     <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Template Name</label>
@@ -414,13 +422,13 @@ export default function Settings({ onViewChange }: SettingsProps) {
                   </button>
                 </div>
               </div>
-            </div>
+            </Modal>
           )}
 
           {/* Template Editor Modal */}
           {showTemplateEditor && editingTemplate && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowTemplateEditor(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl" onClick={e => e.stopPropagation()}>
+            <Modal onClose={() => setShowTemplateEditor(false)} maxWidth="max-w-2xl">
+              <div>
                 <div className="p-6 border-b border-outline-variant/10 flex items-center justify-between">
                   <div>
                     <input
@@ -459,7 +467,7 @@ export default function Settings({ onViewChange }: SettingsProps) {
                   </button>
                 </div>
               </div>
-            </div>
+            </Modal>
           )}
         </div>
       )}
@@ -525,19 +533,53 @@ export default function Settings({ onViewChange }: SettingsProps) {
               Danger Zone
             </h3>
             <p className="text-sm text-on-surface-variant mb-4">These actions are irreversible. Please proceed with caution.</p>
-            <button
-              onClick={() => addToast({ type: 'warning', title: 'Confirmation Required', message: 'Please contact your administrator to deactivate this account.' })}
-              className="px-4 py-2 bg-error/10 text-error font-bold rounded-xl text-sm hover:bg-error/20 transition-colors border border-error/20"
-            >
-              Deactivate Account
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="px-4 py-2 bg-error/10 text-error font-bold rounded-xl text-sm hover:bg-error/20 transition-colors border border-error/20 flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">restart_alt</span>
+                Reset Demo Data
+              </button>
+              <button
+                onClick={() => addToast({ type: 'warning', title: 'Confirmation Required', message: 'Please contact your administrator to deactivate this account.' })}
+                className="px-4 py-2 bg-error/10 text-error font-bold rounded-xl text-sm hover:bg-error/20 transition-colors border border-error/20"
+              >
+                Deactivate Account
+              </button>
+            </div>
           </div>
+
+          {/* Reset Demo Data Confirmation */}
+          {showResetConfirm && (
+            <Modal title="Reset Demo Data" onClose={() => setShowResetConfirm(false)} maxWidth="max-w-sm">
+              <div className="p-6">
+                <p className="text-sm text-on-surface-variant mb-5">
+                  This restores all patients, appointments, notes, and other demo data to their original state.
+                  Any changes you've made in this demo will be lost.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-surface-container-low text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={resetDemoData}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-error text-white hover:opacity-90 transition-all"
+                  >
+                    Reset Everything
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          )}
 
           {/* Change Password Modal */}
           {showPasswordModal && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowPasswordModal(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-                <h3 className="font-headline font-bold text-on-surface mb-5">Change Password</h3>
+            <Modal title="Change Password" onClose={() => setShowPasswordModal(false)} maxWidth="max-w-sm">
+              <div className="p-6">
                 <div className="space-y-3 mb-5">
                   {[
                     { label: 'Current Password', key: 'current' as const },
@@ -574,19 +616,13 @@ export default function Settings({ onViewChange }: SettingsProps) {
                   </button>
                 </div>
               </div>
-            </div>
+            </Modal>
           )}
 
           {/* Audit Log Modal */}
           {showAuditLog && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowAuditLog(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center">
-                  <h3 className="font-headline font-bold text-on-surface">HIPAA Audit Log</h3>
-                  <button onClick={() => setShowAuditLog(false)} className="p-2 hover:bg-surface-container-low rounded-lg">
-                    <span className="material-symbols-outlined text-sm">close</span>
-                  </button>
-                </div>
+            <Modal title="HIPAA Audit Log" onClose={() => setShowAuditLog(false)}>
+              <div>
                 <div className="p-4 max-h-96 overflow-y-auto">
                   {[
                     { time: '9:14 AM', action: 'Viewed patient chart', detail: 'Elias Thorne (p1)', icon: 'visibility' },
@@ -612,7 +648,7 @@ export default function Settings({ onViewChange }: SettingsProps) {
                   <p className="text-xs text-on-surface-variant text-center">Showing today's access log · All times in local timezone</p>
                 </div>
               </div>
-            </div>
+            </Modal>
           )}
         </div>
       )}
